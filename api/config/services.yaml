@@ -1,24 +1,44 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
+# config/services.yaml
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
 
 services:
-    # default configuration for services in *this* file
+    # Default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+    # Make EntityManagerInterface autowirable
+    Doctrine\ORM\EntityManagerInterface: '@doctrine.orm.default_entity_manager'
+
+    # Explicitly define the command (optional, as autowire should handle it)
+    App\Command\ImportDatabase:
+        tags:
+            - { name: 'console.command' }
+
+    # Define EntityImporter with handler dependencies
+    App\Service\EntityImporter:
+        arguments:
+            $entityHandlers:
+                App\Entity\Brand: '@App\Handlers\BrandHandler'
+                App\Entity\Automobile: '@App\Handlers\AutomobileHandler'
+                App\Entity\Engine: '@App\Handlers\EngineHandler'
+
+    # Ensure handler services are registered (optional if autowire works)
+    App\Handlers\BrandHandler: ~
+    App\Handlers\AutomobileHandler: ~
+    App\Handlers\EngineHandler: ~
+
+    # Ensure TableTruncator and CsvReader are registered
+    App\Service\TableTruncator: ~
+    App\Service\CsvReader: ~
+
+    # Make all classes in src/ available as services
     App\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
