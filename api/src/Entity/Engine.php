@@ -81,9 +81,9 @@ class Engine
         return $this;
     }
 
-    public function getSpecs(): ?string
+    public function getSpecs(): ?array
     {
-        return $this->specs;
+        return json_decode($this->specs, true);
     }
 
     public function setSpecs(?string $specs): self
